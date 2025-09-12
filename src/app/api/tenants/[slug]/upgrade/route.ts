@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma';
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: { slug: string } }
+  { params }: { params: Promise<{ slug: string }> }
 ) {
   try {
     const user = await getCurrentUser(request);
@@ -23,8 +23,10 @@ export async function POST(
       );
     }
 
+    const { slug } = await params;
+
     // Verify the tenant slug matches the user's tenant
-    if (user.tenant.slug !== params.slug) {
+    if (user.tenant.slug !== slug) {
       return NextResponse.json(
         { error: 'You can only upgrade your own tenant' },
         { status: 403 }
@@ -33,7 +35,7 @@ export async function POST(
 
     // Update tenant to PRO plan
     const updatedTenant = await prisma.tenant.update({
-      where: { slug: params.slug },
+      where: { slug: slug },
       data: { plan: 'PRO' },
     });
 

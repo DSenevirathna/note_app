@@ -8,7 +8,7 @@ interface User {
   id: string;
   email: string;
   role: string;
-  tenant: {
+  tenant?: {
     id: string;
     slug: string;
     name: string;
@@ -27,8 +27,17 @@ export default function Home() {
     const savedUser = localStorage.getItem('user');
     
     if (savedToken && savedUser) {
-      setToken(savedToken);
-      setUser(JSON.parse(savedUser));
+      try {
+        const parsedUser = JSON.parse(savedUser);
+        console.log('Loaded user from localStorage:', parsedUser);
+        setToken(savedToken);
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Failed to parse user from localStorage:', error);
+        // Clear invalid data
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+      }
     }
     setLoading(false);
   }, []);
@@ -67,7 +76,21 @@ export default function Home() {
           </div>
         </div>
       ) : (
-        <NotesApp user={user} token={token!} onLogout={handleLogout} />
+        user && user.tenant ? (
+          <NotesApp user={user} token={token!} onLogout={handleLogout} />
+        ) : (
+          <div className="flex items-center justify-center min-h-screen">
+            <div className="text-center">
+              <p className="text-red-600 mb-4">Session data is incomplete. Please login again.</p>
+              <button 
+                onClick={handleLogout}
+                className="bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors"
+              >
+                Login Again
+              </button>
+            </div>
+          </div>
+        )
       )}
     </div>
   );

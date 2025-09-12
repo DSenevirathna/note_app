@@ -6,7 +6,7 @@ interface User {
   id: string;
   email: string;
   role: string;
-  tenant: {
+  tenant?: {
     id: string;
     slug: string;
     name: string;
@@ -114,6 +114,11 @@ const NotesApp = ({ user, token, onLogout }: NotesAppProps) => {
   };
 
   const upgradeTenant = async () => {
+    if (!user.tenant?.slug) {
+      setError('Unable to upgrade: tenant information not available');
+      return;
+    }
+
     try {
       const response = await fetch(`/api/tenants/${user.tenant.slug}/upgrade`, {
         method: 'POST',
@@ -146,8 +151,8 @@ const NotesApp = ({ user, token, onLogout }: NotesAppProps) => {
     fetchNotes();
   }, []);
 
-  const canCreateNote = user.tenant.plan === 'PRO' || notes.length < 3;
-  const isAtLimit = user.tenant.plan === 'FREE' && notes.length >= 3;
+  const canCreateNote = user.tenant?.plan === 'PRO' || notes.length < 3;
+  const isAtLimit = user.tenant?.plan === 'FREE' && notes.length >= 3;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -157,17 +162,17 @@ const NotesApp = ({ user, token, onLogout }: NotesAppProps) => {
           <div className="flex justify-between items-center h-16">
             <div>
               <h1 className="text-xl font-semibold text-gray-900">
-                {user.tenant.name} Notes
+                {user.tenant?.name || 'Unknown'} Notes
               </h1>
               <div className="flex items-center space-x-4 text-sm text-gray-500">
                 <span>{user.email}</span>
                 <span className="capitalize">{user.role.toLowerCase()}</span>
                 <span className={`px-2 py-1 rounded text-xs font-medium ${
-                  user.tenant.plan === 'PRO' 
+                  user.tenant?.plan === 'PRO' 
                     ? 'bg-green-100 text-green-800' 
                     : 'bg-yellow-100 text-yellow-800'
                 }`}>
-                  {user.tenant.plan} Plan
+                  {user.tenant?.plan || 'FREE'} Plan
                 </span>
               </div>
             </div>
@@ -246,7 +251,8 @@ const NotesApp = ({ user, token, onLogout }: NotesAppProps) => {
                   type="text"
                   value={newNote.title}
                   onChange={(e) => setNewNote({ ...newNote, title: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Enter note title"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500"
                   required
                 />
               </div>
@@ -257,8 +263,9 @@ const NotesApp = ({ user, token, onLogout }: NotesAppProps) => {
                 <textarea
                   value={newNote.content}
                   onChange={(e) => setNewNote({ ...newNote, content: e.target.value })}
+                  placeholder="Enter note content (optional)"
                   rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 bg-white placeholder-gray-500"
                 />
               </div>
               <div className="flex space-x-3">

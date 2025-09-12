@@ -1,4 +1,4 @@
-import { PrismaClient, Role, Plan } from '@prisma/client';
+import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
@@ -11,7 +11,7 @@ async function main() {
     create: {
       slug: 'acme',
       name: 'Acme Corp',
-      plan: Plan.FREE,
+      plan: 'FREE',
     },
   });
 
@@ -21,7 +21,7 @@ async function main() {
     create: {
       slug: 'globex',
       name: 'Globex Inc',
-      plan: Plan.FREE,
+      plan: 'FREE',
     },
   });
 
@@ -35,7 +35,7 @@ async function main() {
     create: {
       email: 'admin@acme.test',
       password: hashedPassword,
-      role: Role.ADMIN,
+      role: 'ADMIN',
       tenantId: acmeTenant.id,
     },
   });
@@ -46,7 +46,7 @@ async function main() {
     create: {
       email: 'user@acme.test',
       password: hashedPassword,
-      role: Role.MEMBER,
+      role: 'MEMBER',
       tenantId: acmeTenant.id,
     },
   });
@@ -58,7 +58,7 @@ async function main() {
     create: {
       email: 'admin@globex.test',
       password: hashedPassword,
-      role: Role.ADMIN,
+      role: 'ADMIN',
       tenantId: globexTenant.id,
     },
   });
@@ -69,7 +69,7 @@ async function main() {
     create: {
       email: 'user@globex.test',
       password: hashedPassword,
-      role: Role.MEMBER,
+      role: 'MEMBER',
       tenantId: globexTenant.id,
     },
   });
